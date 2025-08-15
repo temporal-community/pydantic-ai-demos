@@ -1,0 +1,239 @@
+# Pydantic AI Temporal Demos
+
+This repository contains four standalone demos showcasing Pydantic AI integrated with Temporal's durable execution.
+
+Inspired by the [OpenAI cookbook](https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_research_api) examples, these demos show different patterns of agent orchestration using OpenAI models with Pydantic AI, from simple single-agent workflows to complex multi-agent research systems with interactive user clarifications.
+
+For detailed information about the research agents in this repo, see [pydantic_demos/workflows/research_agents/README.md](pydantic_demos/workflows/research_agents/README.md)
+
+More Temporal Pydantic AI samples can be found in Temporal's [samples-python repository](https://github.com/temporalio/samples-python/tree/main/pydantic_ai).
+
+## Prerequisites
+
+1. **Python 3.10+** - Required for the demos
+2. **Temporal Server** - Must be running locally on `localhost:7233`
+3. **OpenAI API Key** - Set as environment variable `OPENAI_API_KEY` (note, you will need enough quota on in your [OpenAI account](https://platform.openai.com/api-keys) to run this demo)
+4. **PDF Generation Dependencies** - Required for PDF output (optional)
+
+### Starting Temporal Server
+
+```bash
+# Install Temporal CLI
+curl -sSf https://temporal.download/cli.sh | sh
+
+# Start Temporal server
+temporal server start-dev
+```
+
+## Setup
+
+1. Clone this repository
+2. Install dependencies:
+   ```bash
+   uv sync
+   ```
+3. Set your OpenAI API key:
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+### PDF Generation (optional)
+
+Only used in `Demo 4: Multi-Agent Interactive Research Workflow`
+
+For PDF generation functionality, you'll need WeasyPrint and its system dependencies:
+
+#### macOS (using Homebrew)
+```bash
+brew install weasyprint
+# OR install system dependencies for pip installation:
+brew install pango glib gtk+3 libffi
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+# For package installation:
+sudo apt install weasyprint
+
+# OR for pip installation:
+sudo apt install python3-pip libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+```
+
+#### Linux (Fedora)
+```bash
+# For package installation:
+sudo dnf install weasyprint
+
+# OR for pip installation:
+sudo dnf install python-pip pango
+```
+
+#### Windows
+1. Install Python from Microsoft Store
+2. Install MSYS2 from https://www.msys2.org/
+3. In MSYS2 shell: `pacman -S mingw-w64-x86_64-pango`
+4. Set environment variable: `WEASYPRINT_DLL_DIRECTORIES=C:\msys64\mingw64\bin`
+
+**Note:** PDF generation gracefully degrades when dependencies are unavailable - workflows will still generate markdown reports.
+
+## Running the Demos
+
+### Step 1: Start the Worker
+
+In one terminal, start the worker that will handle all workflows:
+
+```bash
+uv run pydantic_demos/run_worker.py
+```
+
+Keep this running throughout your demo sessions. The worker registers all available workflows and activities.
+
+### Step 2: Run Any Demo
+
+In a separate terminal, run any of the demo scripts:
+
+### Demo 1: Hello World Workflow
+
+A simple agent that responds only in haikus.
+
+**Files:**
+- `pydantic_demos/workflows/hello_world_workflow.py` - Simple haiku-generating agent
+- `pydantic_demos/run_hello_world_workflow.py` - Client runner
+
+**To run:**
+```bash
+uv run pydantic_demos/run_hello_world_workflow.py
+```
+
+### Demo 2: Tools Workflow
+
+An agent that uses a weather function as a tool.
+
+**Files:**
+- `pydantic_demos/workflows/tools_workflow.py` - Workflow using weather tool
+- `pydantic_demos/run_tools_workflow.py` - Client runner
+
+**To run:**
+```bash
+uv run pydantic_demos/run_tools_workflow.py
+```
+
+### Demo 3: Basic Research Workflow
+
+A research system that processes queries and generates comprehensive markdown reports.
+
+**Files:**
+- `pydantic_demos/workflows/research_bot_workflow.py` - Main research workflow
+- `pydantic_demos/workflows/simple_research_manager.py` - Simple research orchestrator
+- `pydantic_demos/workflows/research_agents/` - Research agent components
+- `pydantic_demos/run_research_workflow.py` - Research client
+
+**Agents:**
+- **Planner Agent**: Plans web searches based on the query
+- **Search Agent**: Performs searches to gather information
+- **Writer Agent**: Compiles the final research report
+
+**To run:**
+```bash
+uv run pydantic_demos/run_research_workflow.py "Tell me about quantum computing"
+```
+
+**Output:**
+- `pydantic_research_report.md` - Comprehensive markdown report
+
+**Note:** The research workflow may take 1-2 minutes to complete due to web searches and report generation.
+
+### Demo 4: Multi-Agent Interactive Research Workflow
+
+An enhanced version of the research workflow with interactive clarifying questions to refine research parameters before execution and optional PDF generation.
+
+This example is inspired by the [OpenAI Deep Research API cookbook](https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_research_api).
+
+**Files:**
+- `pydantic_demos/workflows/interactive_research_workflow.py` - Interactive research workflow
+- `pydantic_demos/workflows/research_agents/` - All research agent components
+- `pydantic_demos/run_interactive_research_workflow.py` - Interactive research client
+- `pydantic_demos/workflows/pdf_generation_activity.py` - PDF generation activity
+- `pydantic_demos/workflows/research_agents/pdf_generator_agent.py` - PDF generation agent
+
+**Agents:**
+- **Triage Agent**: Analyzes research queries and determines if clarifications are needed
+- **Clarifying Agent**: Generates follow-up questions for better research parameters
+- **Planner Agent**: Creates web search plans
+- **Search Agent**: Performs web searches
+- **Writer Agent**: Compiles final research reports
+- **PDF Generator Agent**: Converts markdown reports to professionally formatted PDFs
+
+**To run:**
+```bash
+uv run pydantic_demos/run_interactive_research_workflow.py "Tell me about quantum computing"
+```
+
+**Additional options:**
+- `--non-interactive`: Skip clarifying questions and do direct research
+
+**Output:**
+- `research_report.md` - Comprehensive markdown report
+- `pdf_output/research_report.pdf` - Professionally formatted PDF (if PDF generation is available)
+
+**Note:** The interactive workflow may take 2-3 minutes to complete due to web searches and report generation.
+
+## Project Structure
+
+```
+pydantic-ai-demos/
+├── README.md                           # This file
+├── pyproject.toml                      # Project dependencies
+├── pydantic_demos/
+│   ├── __init__.py
+│   ├── run_worker.py                   # Worker that registers all workflows
+│   ├── run_hello_world_workflow.py     # Hello World demo runner
+│   ├── run_tools_workflow.py           # Tools demo runner
+│   ├── run_research_workflow.py        # Research demo runner
+│   ├── run_interactive_research_workflow.py     # Interactive research demo runner
+│   └── workflows/
+│       ├── __init__.py
+│       ├── hello_world_workflow.py     # Simple haiku agent
+│       ├── tools_workflow.py           # Weather tool demo
+│       ├── research_bot_workflow.py    # Main research workflow
+│       ├── interactive_research_workflow.py  # Interactive research workflow
+│       ├── simple_research_manager.py  # Simple research orchestrator
+│       ├── interactive_research_manager.py  # Interactive research orchestrator
+│       ├── pdf_generation_activity.py  # PDF generation activity
+│       └── research_agents/            # Research agent components
+│           ├── __init__.py
+│           ├── research_models.py      # Data models
+│           ├── triage_agent.py         # Query analysis agent
+│           ├── clarifying_agent.py     # Question generation agent
+│           ├── planner_agent.py        # Research planning agent
+│           ├── search_agent.py         # Web search agent
+│           ├── writer_agent.py         # Report writing agent
+│           └── pdf_generator_agent.py  # PDF generation agent
+```
+
+## Development
+
+### Code Quality Tools
+
+```bash
+# Format code
+uv run -m black .
+uv run -m isort .
+
+# Type checking
+uv run -m mypy --check-untyped-defs --namespace-packages .
+uv run pyright .
+```
+
+## Key Features
+
+- **Temporal Workflows**: All demos use Temporal for reliable workflow orchestration
+- **Pydantic AI**: Powered by Pydantic AI for natural language processing with OpenAI models
+- **Multi-Agent Systems**: The research demo showcases complex multi-agent coordination
+- **Interactive Workflows**: Research demo supports real-time user interaction
+- **Tool Integration**: Tools demo shows how to integrate external functions as tools
+- **PDF Generation**: Interactive research workflow generates professional PDF reports alongside markdown
+
+## License
+
+MIT License - see the original project for full license details.
