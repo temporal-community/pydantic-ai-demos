@@ -1,6 +1,6 @@
 # Pydantic AI Temporal Demos
 
-This repository contains four standalone demos showcasing Pydantic AI integrated with Temporal's durable execution.
+This repository contains five standalone demos showcasing Pydantic AI integrated with Temporal's durable execution.
 
 Inspired by the [OpenAI cookbook](https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_research_api) examples, these demos show different patterns of agent orchestration using OpenAI models with Pydantic AI, from simple single-agent workflows to complex multi-agent research systems with interactive user clarifications.
 
@@ -178,6 +178,21 @@ uv run pydantic_demos/run_interactive_research_workflow.py "Tell me about quantu
 
 **Note:** The interactive workflow may take 2-3 minutes to complete due to web searches and report generation.
 
+### Demo 5: Streaming Model Response
+
+A streaming agent using Pydantic AI's event_stream_handler for real-time responses via WebSocket.
+
+**Files:**
+- `pydantic_demos/run_streaming_workflow.py` - All-in-one websocket server, workflow, and client runner
+
+**To run:**
+```bash
+uv run pydantic_demos/run_streaming_workflow.py
+```
+
+**Features:**
+- Real-time model response streaming via WebSocket using Pydantic AI's event_stream_handler
+
 ## Project Structure
 
 ```
@@ -191,6 +206,7 @@ pydantic-ai-demos/
 │   ├── run_tools_workflow.py           # Tools demo runner
 │   ├── run_research_workflow.py        # Research demo runner
 │   ├── run_interactive_research_workflow.py     # Interactive research demo runner
+│   ├── run_streaming_workflow.py       # Streaming demo runner
 │   └── workflows/
 │       ├── __init__.py
 │       ├── hello_world_workflow.py     # Simple haiku agent
@@ -233,6 +249,7 @@ uv run pyright .
 - **Interactive Workflows**: Research demo supports real-time user interaction
 - **Tool Integration**: Tools demo shows how to integrate external functions as tools
 - **PDF Generation**: Interactive research workflow generates professional PDF reports alongside markdown
+- **Streaming Responses**: WebSocket-based real-time model response streaming
 
 ## License
 
